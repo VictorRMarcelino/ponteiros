@@ -1,13 +1,14 @@
 Program Ponteiro;
 
 const CODIGO_ACAO_INCLUIR = 1;
+			CODIGO_ACAO_LISTAR_CURSOS = 2;
 
 type 	nodeAluno = ^TAluno;
 			TAluno = record
 									nome: string;
 									prox: nodeAluno;
 								end;
-			nodeCurso = TCurso;
+			nodeCurso = ^TCurso;
 			TCurso = record
 									nome: string;
 									aluno: nodeAluno;
@@ -20,33 +21,48 @@ type 	nodeAluno = ^TAluno;
 	@param nodeCurso listaCurso
 	@param string nomeCurso
 }
-procedure insereNovoCurso(listaCurso: nodeCurso, nomeCurso: string);
+procedure insereNovoCurso(var listaCurso: nodeCurso; nomeCurso: string);
 var aux, aux2, anterior: nodeCurso;
 begin;
-	if (listaCurso = nil) then
+	new(aux);
+	
+	if (aux = nil) then
+		writeln('A lista está cheia')
+	else
 		begin;
 			aux^.nome := nomeCurso;
-			aux^.prox := nil;
-			listaCurso := aux;
-		end
-	else 
-		begin;
-			aux2 := listaCurso;
-			anterior := listaCurso;
 			
-			while (aux2^.prox <> nil) AND (nomeCurso > aux2^.nome) do
+			if (listaCurso = nil) then
 				begin;
-					anterior := aux2;
-					aux2 := aux2^.prox;
-				end;
-				
-			if (aux2 = listaCurso) then
-				begin;
-					aux^.nome := nomeCurso;
+					aux^.prox := nil;
+					listaCurso := aux;
 				end
 			else 
 				begin;
-					
+					anterior := listaCurso;
+					aux2 := listaCurso;
+			
+					while (aux2^.prox <> nil) AND (nomeCurso > aux2^.nome) do
+						begin;
+							anterior := aux2;
+							aux2 := aux2^.prox;
+						end;
+				
+					if (aux2 = listaCurso) then
+						begin;
+							aux^.prox := listaCurso;
+							listaCurso := aux;	
+						end
+					else if (aux2^.prox = nil) AND (nomeCurso > aux2^.nome) then 
+						begin;
+							aux^.prox := nil;
+					  	aux2^.prox := aux;		
+						end
+					else 
+						begin;
+							anterior^.prox := aux;
+							aux^.prox := aux2;	
+						end;
 				end;
 		end;
 end;
@@ -62,16 +78,24 @@ var aux: nodeCurso;
 begin;
 	if (curso = nil) then
 		begin;
-			insereNovoCurso(curso: nodeCurso; nomeCurso: string);
-			getNodeCurso := getNodeCurso();
+			insereNovoCurso(curso, nomeCurso);
+			getNodeCurso := getNodeCurso(curso, nomeCurso);
 		end
 	else
 		begin;
 			aux := curso;
 			
-			while (aux^.prox <> nil) AND (aux^.nome <> nomeCurso) do
+			while (aux <> nil) AND (aux^.nome <> nomeCurso) do
 				begin;
 					aux := aux^.prox;
+				end;
+				
+			if (aux^.nome = nomeCurso) then
+				getNodeCurso := aux
+			else
+				begin;
+					insereNovoCurso(curso, nomeCurso);
+					getNodeCurso := getNodeCurso(curso, nomeCurso);	
 				end;	
 		end;
 end;
@@ -86,22 +110,37 @@ begin;
 	clrscr;
 	writeln('Para qual curso você deseja inserir o aluno?');
 	readln(nomeCurso);
-	solicitaNomeCurso := LowerCase(nomeCurso);
-end;
-
-procedure 								
+	solicitaNomeCurso := nomeCurso;
+end; 								
 
 {
 	Insere um novo aluno
 	@param nodeCurso curso
 }								
-procedure insereAluno(listaCurso: nodeCurso);
+procedure insereAluno(var listaCurso: nodeCurso);
 var nomeCurso, nomeAluno: string;
 var curso: nodeCurso;
 begin;	
 	nomeCurso := solicitaNomeCurso();
 	curso := getNodeCurso(curso, nomeCurso);
 end;
+
+{
+	Realiza a listagem dos cursos
+	@param nodeCurso listaCurso
+}
+procedure listarCursos(listaCurso: nodeCurso);
+var aux: nodeCurso;
+var index: integer;
+begin;
+	aux := listaCurso;
+	writeln('Lista de Cursos');
+	
+	while (aux <> nil) do
+		begin;
+			writeln(index, ' - ', aux^.nome);
+		end;
+end; 
 
 {
 	Inicia o menu do sistema
@@ -115,15 +154,17 @@ begin;
 			writeln ('    MENU    ');
 			writeln ('------------');
 			writeln (CODIGO_ACAO_INCLUIR, ' - Inserir Aluno');
+			writeln (CODIGO_ACAO_LISTAR_CURSOS, ' - Listar Cursos');
 			writeln ('3 - Finalizar');
-			readln(opcao);
+			readln(op);
 			clrscr;
 			
-			if (opcao = CODIGO_ACAO_INCLUIR) then
+			if (op = CODIGO_ACAO_INCLUIR) then
 				begin; 
-					inserirAluno(listaCurso);
-					clrscr;	
+					insereAluno(listaCurso);	
 				end
+			else if (op = CODIGO_ACAO_LISTAR_CURSOS) then
+				  listarCursos(listaCurso);
 		end;
 end;
 
