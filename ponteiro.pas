@@ -73,17 +73,17 @@ end;
 	@param nodeCurso
 	@param string nomeCurso
 }
-function getNodeCurso(curso: nodeCurso; nomeCurso: string): nodeCurso;
+function getNodeCurso(var listaCurso: nodeCurso; nomeCurso: string): nodeCurso;
 var aux: nodeCurso;
 begin;
-	if (curso = nil) then
+	if (listaCurso = nil) then
 		begin;
-			insereNovoCurso(curso, nomeCurso);
-			getNodeCurso := getNodeCurso(curso, nomeCurso);
+			insereNovoCurso(listaCurso, nomeCurso);
+			getNodeCurso := getNodeCurso(listaCurso, nomeCurso);
 		end
 	else
 		begin;
-			aux := curso;
+			aux := listaCurso;
 			
 			while (aux <> nil) AND (aux^.nome <> nomeCurso) do
 				begin;
@@ -94,8 +94,8 @@ begin;
 				getNodeCurso := aux
 			else
 				begin;
-					insereNovoCurso(curso, nomeCurso);
-					getNodeCurso := getNodeCurso(curso, nomeCurso);	
+					insereNovoCurso(listaCurso, nomeCurso);
+					getNodeCurso := getNodeCurso(listaCurso, nomeCurso);	
 				end;	
 		end;
 end;
@@ -122,7 +122,7 @@ var nomeCurso, nomeAluno: string;
 var curso: nodeCurso;
 begin;	
 	nomeCurso := solicitaNomeCurso();
-	curso := getNodeCurso(curso, nomeCurso);
+	curso := getNodeCurso(listaCurso, nomeCurso);
 end;
 
 {
@@ -133,12 +133,15 @@ procedure listarCursos(listaCurso: nodeCurso);
 var aux: nodeCurso;
 var index: integer;
 begin;
+	index := 1;
 	aux := listaCurso;
 	writeln('Lista de Cursos');
 	
 	while (aux <> nil) do
 		begin;
 			writeln(index, ' - ', aux^.nome);
+			aux := aux^.prox;
+			index := index + 1;
 		end;
 end; 
 
