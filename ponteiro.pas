@@ -14,21 +14,44 @@ type 	nodeAluno = ^TAluno;
 									prox: nodeCurso;			
 
 								end;
+
 {
-	Solicita o nome do curso
-	@return string
+	Realiza a inclusão de um novo curso
+	@param nodeCurso listaCurso
+	@param string nomeCurso
 }
-function solicitaNomeCurso():string;
-var nomeCurso: string;
+procedure insereNovoCurso(listaCurso: nodeCurso, nomeCurso: string);
+var aux, aux2, anterior: nodeCurso;
 begin;
-	clrscr;
-	writeln('Para qual curso você deseja inserir o aluno?');
-	readln(nomeCurso);
-	solicitaNomeCurso := LowerCase(nomeCurso);
+	if (listaCurso = nil) then
+		begin;
+			aux^.nome := nomeCurso;
+			aux^.prox := nil;
+			listaCurso := aux;
+		end
+	else 
+		begin;
+			aux2 := listaCurso;
+			anterior := listaCurso;
+			
+			while (aux2^.prox <> nil) AND (nomeCurso > aux2^.nome) do
+				begin;
+					anterior := aux2;
+					aux2 := aux2^.prox;
+				end;
+				
+			if (aux2 = listaCurso) then
+				begin;
+					aux^.nome := nomeCurso;
+				end
+			else 
+				begin;
+					
+				end;
+		end;
 end;
 
-procedure 
-
+								
 {
 	Busca o nó de determinado curso
 	@param nodeCurso
@@ -51,18 +74,33 @@ begin;
 					aux := aux^.prox;
 				end;	
 		end;
-end;								
+end;
+
+{
+	Solicita o nome do curso
+	@return string
+}
+function solicitaNomeCurso():string;
+var nomeCurso: string;
+begin;
+	clrscr;
+	writeln('Para qual curso você deseja inserir o aluno?');
+	readln(nomeCurso);
+	solicitaNomeCurso := LowerCase(nomeCurso);
+end;
+
+procedure 								
 
 {
 	Insere um novo aluno
 	@param nodeCurso curso
 }								
-procedure insereAluno(curso: nodeCurso);
+procedure insereAluno(listaCurso: nodeCurso);
 var nomeCurso, nomeAluno: string;
-var teste: nodeCurso;
+var curso: nodeCurso;
 begin;	
 	nomeCurso := solicitaNomeCurso();
-	teste := getNodeCurso(curso, nomeCurso);
+	curso := getNodeCurso(curso, nomeCurso);
 end;
 
 {
@@ -70,7 +108,7 @@ end;
 }								
 procedure iniciaMenu();
 var op: byte;
-var curso: nodeCurso;
+var listaCurso: nodeCurso;
 begin;
 	while(op <> 3) do
 		begin;
@@ -83,7 +121,7 @@ begin;
 			
 			if (opcao = CODIGO_ACAO_INCLUIR) then
 				begin; 
-					inserirAluno();
+					inserirAluno(listaCurso);
 					clrscr;	
 				end
 		end;
