@@ -1,9 +1,11 @@
 Program Ponteiro;
 
-const CODIGO_ACAO_INCLUIR = 1;
-			CODIGO_ACAO_LISTAR_CURSOS = 2;
-			CODIGO_ACAO_LISTAR_ALUNOS = 3;
-			CODIGO_ACAO_ENCERRAR = 4;
+const CODIGO_ACAO_INCLUIR_CURSO = 1;
+		  CODIGO_ACAO_INCLUIR_ALUNO = 2;
+			CODIGO_ACAO_LISTAR_CURSOS = 3;
+			CODIGO_ACAO_LISTAR_ALUNOS = 4;
+			CODIGO_ACAO_REMOVER_ALUNO = 5;
+			CODIGO_ACAO_ENCERRAR = 6;
 
 type 	nodeAluno = ^TAluno;
 			TAluno = record
@@ -80,8 +82,7 @@ var aux: nodeCurso;
 begin;
 	if (listaCurso = nil) then
 		begin;
-			insereNovoCurso(listaCurso, nomeCurso);
-			getNodeCurso := getNodeCurso(listaCurso, nomeCurso);
+			getNodeCurso := nil
 		end
 	else
 		begin;
@@ -96,8 +97,7 @@ begin;
 				getNodeCurso := aux
 			else
 				begin;
-					insereNovoCurso(listaCurso, nomeCurso);
-					getNodeCurso := getNodeCurso(listaCurso, nomeCurso);	
+					getNodeCurso := nil;	
 				end;	
 		end;
 end;
@@ -138,46 +138,53 @@ var curso, aux, aux2, anterior: nodeCurso;
 begin;	
 	nomeCurso := solicitaNomeCurso();
 	curso := getNodeCurso(listaCurso, nomeCurso);
-	nomeAluno := solicitaNomeAluno();
 	
-	new(aux);
+	if (curso = nil) then
+		clrscr;
+		writeln('O curso não está cadastrado no sistema')
+	else 
+		begin;
+			nomeAluno := solicitaNomeAluno();
 	
-	if (aux = nil) then
-		begin;
-			writeln('A lista está cheia!');
-		end
-	else if (curso^.aluno = nil) then
-		begin;
-			aux^.nome := nomeAluno;
-			aux^.prox := nil;
-			curso^.aluno := aux;
-		end
-	else
-		begin;
-			aux2 := curso;
-			
-			while (aux <> nil) AND (nomeAluno > aux^.nome) do
+			new(aux);
+	
+			if (aux = nil) then
 				begin;
-					anterior := aux2;
-					aux2 := aux2^.prox;
-				end;
-				
-			if (aux2^.nome = nomeAluno) then
-				begin;
-					clrscr;
-					writeln('O aluno já está no curso');
+					writeln('A lista está cheia!');
 				end
-			else if (aux2^.nome > nomeAluno) then
+			else if (curso^.aluno = nil) then
 				begin;
-					aux^.prox := aux2;
-					anterior^.prox := aux;	
+					aux^.nome := nomeAluno;
+					aux^.prox := nil;
+					curso^.aluno := aux;
 				end
 			else
 				begin;
-					aux^.prox := aux2^.prox;
-					aux^.prox := aux;		
-				end;
-		end;
+					aux^.nome := nomeAluno;
+					aux2 := curso;
+			
+					while (aux2 <> nil) AND (nomeAluno > aux2^.nome) do
+						begin;
+							anterior := aux2;
+							aux2 := aux2^.prox;
+						end;
+				
+					if (aux2^.nome = nomeAluno) then
+						begin;
+							clrscr;
+							writeln('O aluno já está no curso');
+						end
+					else if (aux2^.nome > nomeAluno) then
+						begin;
+							aux^.prox := aux2;
+							anterior^.prox := aux;	
+						end
+					else
+						begin;
+							aux^.prox := aux2^.prox;
+							aux2^.prox := aux;		
+						end;
+		end;	
 end;
 
 {
@@ -225,6 +232,42 @@ begin;
 end;
 
 {
+	Remove um aluno de determinado curso
+	@param nodeCurso listaCurso
+}
+procedure removeAluno(listaCurso:nodeCurso);
+var nomeCurso, nomeAluno: string;
+var aux, anterior: nodeCurso;
+begin
+	nomeCurso := solicitaNomeCurso();
+	curso := getNodeCurso(listaCurso, nomeCurso);
+	
+	if (curso = nil) then
+		begin
+		end
+	else 
+		begin;
+			nomeAluno := solicitaNomeAluno();
+			
+			while (aux <> nil) AND (nomeAluno <> aux2.nome) do
+				begin;
+					anterior := aux;
+					aux := aux^.prox;
+				end;
+			
+			if (aux <> nil) then
+				begin
+					anterior^.prox := aux^.prox;
+					dispose(aux);	
+				end
+			else
+				begin
+					writeln('O aluno não está matriculado no curso');
+				end	
+		end;
+end
+
+{
 	Inicia o menu do sistema
 }								
 procedure iniciaMenu();
@@ -242,12 +285,16 @@ begin;
 			readln(op);
 			clrscr;
 			
-			if (op = CODIGO_ACAO_INCLUIR) then
+			if (op = CODIGO_ACAO_INCLUIR_CURSO) then
+				  insereNovoCurso(listaCurso)
+			else if (op = CODIGO_ACAO_INCLUIR_ALUNO) then
 					insereAluno(listaCurso)
 			else if (op = CODIGO_ACAO_LISTAR_CURSOS) then
 				  listarCursos(listaCurso)
 			else if (op = CODIGO_ACAO_LISTAR_ALUNOS) then
-				  listarAlunos(listaCurso);
+				  listarAlunos(listaCurso)
+			else if (op = CODIGO_ACAO_REMOVER_ALUNO) then
+					removeAluno(listaCurso);
 		end;
 end;
 
