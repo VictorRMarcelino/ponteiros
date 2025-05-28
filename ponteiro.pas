@@ -4,7 +4,7 @@ const CODIGO_ACAO_INCLUIR_ALUNO = 1;
 			CODIGO_ACAO_REMOVER_ALUNO = 2;
 			CODIGO_ACAO_LISTAR_CURSOS = 3;
 			CODIGO_ACAO_LISTAR_ALUNOS = 4;
-			CODIGO_ACAO_ENCERRAR = 5;
+			CODIGO_ACAO_ENCERRAR 			= 5;
 
 type 	nodeAluno = ^TAluno;
 			TAluno = record
@@ -45,7 +45,7 @@ begin;
 					anterior := listaCurso;
 					aux2 := listaCurso;
 			
-					while (aux2^.prox <> nil) AND (nomeCurso < aux2^.nome) do
+					while (aux2^.prox <> nil) AND (nomeCurso > aux2^.nome) do
 						begin;
 							anterior := aux2;
 							aux2 := aux2^.prox;
@@ -75,14 +75,20 @@ end;
 	Busca o nó de determinado curso
 	@param nodeCurso
 	@param string nomeCurso
+	@param boolean criaNode Define se deve criar um novo node caso o curso solicitado não exista
 }
-function getNodeCurso(var listaCurso: nodeCurso; nomeCurso: string): nodeCurso;
+function getNodeCurso(var listaCurso: nodeCurso; nomeCurso: string; criaNode: boolean): nodeCurso;
 var aux: nodeCurso;
 begin;
 	if (listaCurso = nil) then
 		begin;
-			insereNovoCurso(listaCurso, nomeCurso);
-			getNodeCurso := getNodeCurso(listaCurso, nomeCurso);
+			if (criaNode = false) then
+				getNodeCurso := nil
+			else 
+				begin;
+					insereNovoCurso(listaCurso, nomeCurso);
+					getNodeCurso := getNodeCurso(listaCurso, nomeCurso, true);
+				end;
 		end
 	else
 		begin;
@@ -96,10 +102,13 @@ begin;
 			if (aux^.nome = nomeCurso) then
 				getNodeCurso := aux
 			else
-				begin;
-					insereNovoCurso(listaCurso, nomeCurso);
-					getNodeCurso := getNodeCurso(listaCurso, nomeCurso);	
-				end;	
+				if (criaNode = false) then
+					getNodeCurso := nil
+				else 
+					begin;
+						insereNovoCurso(listaCurso, nomeCurso);
+						getNodeCurso := getNodeCurso(listaCurso, nomeCurso, true);
+					end;	
 		end;
 end;
 
@@ -138,7 +147,7 @@ var nomeCurso, nomeAluno: string;
 var curso, aux, aux2, anterior: nodeCurso;
 begin;	
 	nomeCurso := solicitaNomeCurso();
-	curso := getNodeCurso(listaCurso, nomeCurso);
+	curso := getNodeCurso(listaCurso, nomeCurso, true);
 	nomeAluno := solicitaNomeAluno();
 	new(aux);
 	
@@ -183,6 +192,21 @@ begin;
 end;
 
 {
+	Valida se o sistema possui algum curso cadastrado
+	@param nodeCurso listaCurso
+	@return boolean
+}
+function existeCursoCadastrado(listaCurso: nodeCurso): boolean;
+begin;
+	existeCursoCadastrado := false;
+	
+	if (listaCurso <> nil) then
+		begin;
+			existeCursoCadastrado := true;	
+		end;
+end;
+
+{
 	Realiza a listagem dos cursos
 	@param nodeCurso listaCurso
 }
@@ -192,17 +216,28 @@ var index: integer;
 begin;
 	index := 1;
 	aux := listaCurso;
-	writeln('Lista de Cursos');
 	
-	while (aux <> nil) do
+	if (existeCursoCadastrado(listaCurso) = false) then
 		begin;
-			writeln(index, ' - ', aux^.nome);
-			aux := aux^.prox;
-			index := index + 1;
+			writeln('O sistema não possui nenhum curso cadastrado');
+			writeln('');			
+		end                                            
+	else
+		begin;
+			index := 1;
+			aux := listaCurso;
+			writeln('Lista de Cursos');	
+				
+			while (aux <> nil) do
+				begin;
+					writeln(index, ' - ', aux^.nome);
+					aux := aux^.prox;
+					index := index + 1;
+				end;
+				
+			writeln('Fim da listagem');
+			writeln('');
 		end;
-		
-	writeln('Fim da listagem');
-	writeln('');
 end; 
 
 {
@@ -214,22 +249,46 @@ var nomeCurso: string;
 var curso, aux: nodeCurso; 
 begin;
 	clrscr;
-	writeln('Deseja listar os alunos de qual curso? (Digite o nome do mesmo)');
-	listarCursos(listaCurso);
-	readln(nomeCurso);
-	curso := getNodeCurso(listaCurso, nomeCurso);
-	aux := curso^.aluno;
-	clrscr;
-	writeln('Alunos do curso ', curso^.nome, ':');
 	
-	while (aux <> nil) do
+	if (existeCursoCadastrado(listaCurso) = false) then
 		begin;
-			writeln(aux^.nome);
-			aux := aux^.prox;
+			writeln('O sistema não possui nenhum curso cadastrado');
+			writeln('');	
+		end
+	else
+		begin;
+			writeln('Deseja listar os alunos de qual curso? (Digite o nome do mesmo)');
+			listarCursos(listaCurso);
+			readln(nomeCurso);
+			curso := getNodeCurso(listaCurso, nomeCurso, false);
+			
+			if (curso = nil) then
+				writeln('O curso ', nomeCurso, ' não está cadastrado no sistema')
+			else
+				begin;
+					aux := curso^.aluno;  
+					
+					if (aux = nil) then
+						begin;
+						 	writeln('O curso ', curso^.nome, ' não possui nenhum aluno cadastrado');
+							writeln('');						
+						end                                                                  
+					else			
+						begin;
+							clrscr;
+							writeln('Alunos do curso ', curso^.nome, ':');
+							
+							while (aux <> nil) do
+								begin;
+									writeln(aux^.nome);
+									aux := aux^.prox;
+								end;
+								
+							writeln('Fim da listagem');
+							writeln('');
+						end;
+				end;
 		end;
-		
-	writeln('Fim da listagem');
-	writeln('');
 end;
 
 {
@@ -242,42 +301,50 @@ var curso, aux, anterior: nodeCurso;
 begin
 
 	if (listaCurso = nil) then
-		writeln('O sistema não possui nenhum curso cadastrado')
+		begin;
+			writeln('O sistema não possui nenhum curso cadastrado');
+			writeln('');
+		end
 	else
 		begin; 
 			nomeCurso := solicitaNomeCurso();
-			curso := getNodeCurso(listaCurso, nomeCurso);
+			curso := getNodeCurso(listaCurso, nomeCurso, false);
 			
-			if (curso^.aluno = nil) then
-				writeln ('O Curso ', curso^.nome ,' não contém nenhum aluno cadastrado')
+			if (curso = nil) then
+				writeln('O curso ', nomeCurso, ' não está cadastrado no sistema')
 			else
-				begin
-					nomeAluno := solicitaNomeAluno();
-					anterior := curso^.aluno;
-					aux := curso^.aluno;
-				
-					while (aux^.prox <> nil) AND (nomeAluno <> aux^.nome) do             
-						begin;
-							anterior := aux;
-							aux := aux^.prox;
-						end;
-						
-					if (anterior = aux) AND (aux^.nome = nomeAluno) then
-						begin
-							curso^.aluno := aux^.prox;
-							writeln ('O aluno ',aux^.nome,' foi removido do curso ',curso^.nome);
-							dispose(aux);	
-						end
-					else if (anterior <> aux) AND (aux^.nome = nomeAluno) then
-						begin
-							anterior^.prox := aux^.prox;
-							writeln ('O aluno ',aux^.nome,' foi removido do curso ',curso^.nome);
-							dispose(aux);
-						end
-					else
-						begin;
-							writeln('O aluno não está matriculado no curso');
-						end;
+				begin;
+				if (curso^.aluno = nil) then
+					writeln ('O Curso ', curso^.nome ,' não contém nenhum aluno cadastrado')
+				else
+					begin
+						nomeAluno := solicitaNomeAluno();
+						anterior := curso^.aluno;
+						aux := curso^.aluno;
+					
+						while (aux^.prox <> nil) AND (nomeAluno <> aux^.nome) do             
+							begin;
+								anterior := aux;
+								aux := aux^.prox;
+							end;
+							
+						if (anterior = aux) AND (aux^.nome = nomeAluno) then
+							begin
+								curso^.aluno := aux^.prox;
+								writeln ('O aluno ',aux^.nome,' foi removido do curso ',curso^.nome);
+								dispose(aux);	
+							end
+						else if (anterior <> aux) AND (aux^.nome = nomeAluno) then
+							begin
+								anterior^.prox := aux^.prox;
+								writeln ('O aluno ',aux^.nome,' foi removido do curso ',curso^.nome);
+								dispose(aux);
+							end
+						else
+							begin;
+								writeln('O aluno ', nomeAluno, ' não está matriculado no curso ', curso^.nome);
+							end;
+					end;
 				end;
 		end;
 end;
