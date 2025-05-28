@@ -247,30 +247,38 @@ begin
 		begin; 
 			nomeCurso := solicitaNomeCurso();
 			curso := getNodeCurso(listaCurso, nomeCurso);
-			nomeAluno := solicitaNomeAluno();
-			anterior := curso^.aluno;
-			aux := curso^.aluno;
 			
-		while (aux^.prox <> nil) AND (nomeAluno <> aux^.nome) do             
-			begin;
-				anterior := aux;
-				aux := aux^.prox;
-			end;
-			
-		if (anterior = aux) AND (aux^.nome = nomeAluno) then
-			begin
-				curso^.aluno := aux^.prox;
-				dispose(aux);	
-			end
-		else if (anterior <> aux) AND (aux^.nome = nomeAluno) then
-			begin
-				anterior^.prox := aux^.prox;
-				dispose(aux);
-			end
-		else
-			begin;
-				writeln('O aluno não está matriculado no curso');
-			end;
+			if (curso^.aluno = nil) then
+				writeln ('O Curso ', curso^.nome ,' não contém nenhum aluno cadastrado')
+			else
+				begin
+					nomeAluno := solicitaNomeAluno();
+					anterior := curso^.aluno;
+					aux := curso^.aluno;
+				
+					while (aux^.prox <> nil) AND (nomeAluno <> aux^.nome) do             
+						begin;
+							anterior := aux;
+							aux := aux^.prox;
+						end;
+						
+					if (anterior = aux) AND (aux^.nome = nomeAluno) then
+						begin
+							curso^.aluno := aux^.prox;
+							writeln ('O aluno ',aux^.nome,' foi removido do curso ',curso^.nome);
+							dispose(aux);	
+						end
+					else if (anterior <> aux) AND (aux^.nome = nomeAluno) then
+						begin
+							anterior^.prox := aux^.prox;
+							writeln ('O aluno ',aux^.nome,' foi removido do curso ',curso^.nome);
+							dispose(aux);
+						end
+					else
+						begin;
+							writeln('O aluno não está matriculado no curso');
+						end;
+				end;
 		end;
 end;
 
